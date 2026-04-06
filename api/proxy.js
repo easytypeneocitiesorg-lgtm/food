@@ -2,27 +2,65 @@ export default async function handler(req, res) {
   try {
     let { url } = req.query;
 
-    if (!url) {
-      return res.status(400).send("No URL");
-    }
+    if (!url) return res.status(400).send("No URL");
 
     if (!/^https?:\/\//i.test(url)) {
       url = "https://" + url;
     }
 
-    // follow redirects automatically
     const response = await fetch(url, {
       redirect: "follow"
     });
 
-    const finalUrl = response.url;
-    const contentType = response.headers.get("content-type") || "text/html";
+    let text = await response.text();
 
-    const body = await response.text();
+    // rewrite links (href/src/action)
+    text = text.replace(
+      /(href|src|action)=["'](.*?)["']/gi,
+      (match, attr, link) => {
+        if (link.startsWith("http")) {
+          return `${attr}="/api/proxy?url=${encodeURIComponent(link)}"`;
+        }
+        return match;
+      }
+    );
 
-    // send back page
-    res.setHeader("content-type", contentType);
-    res.send(body);
+    // inject script to catch JS redirects
+    text = text.replace(
+      "</body>",
+      `
+<script>
+(function() {
+  const origAssign = window.location.assign;
+  const origReplace = window.location.replace;
+
+  function rewrite(url) {
+    if (url.startsWith("http")) {
+      return "/api/proxy?url=" + encodeURIComponent(url);
+    }
+    return url;
+  }
+
+  window.location.assign = function(url) {
+    origAssign.call(window.location, rewrite(url));
+  };
+
+  window.location.replace = function(url) {
+    origReplace.call(window.location, rewrite(url));
+  };
+
+  Object.defineProperty(window.location, "href", {
+    set: function(url) {
+      origAssign.call(window.location, rewrite(url));
+    }
+  });
+})();
+</script>
+</body>`
+    );
+
+    res.setHeader("content-type", "text/html");
+    res.send(text);
 
   } catch (e) {
     res.status(500).send("Error: " + e.toString());
