@@ -1,26 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Iframe Site</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Proxy Iframe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-    }
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* toggle button */
+#toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 9999;
+  padding: 8px 12px;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#toggle.on {
+  background: green;
+}
+</style>
 </head>
 <body>
-  <iframe src="https://freetubespot.com"></iframe>
+
+<button id="toggle">Redirect Follow: OFF</button>
+<iframe id="frame"></iframe>
+
+<script>
+let followRedirects = false;
+const frame = document.getElementById("frame");
+const toggle = document.getElementById("toggle");
+
+// starting page
+let currentURL = "https://freetubespot.com";
+
+function load(url) {
+  if (followRedirects) {
+    frame.src = "/api/proxy?url=" + encodeURIComponent(url);
+  } else {
+    frame.src = url;
+  }
+}
+
+// toggle logic
+toggle.onclick = () => {
+  followRedirects = !followRedirects;
+  toggle.textContent = "Redirect Follow: " + (followRedirects ? "ON" : "OFF");
+  toggle.classList.toggle("on");
+
+  load(currentURL);
+};
+
+// initial load
+load(currentURL);
+</script>
+
 </body>
 </html>
