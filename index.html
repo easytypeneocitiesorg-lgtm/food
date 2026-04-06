@@ -2,28 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Iframe Site</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>Open</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
+    body {
       background: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
     }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <iframe src="https://freetubespot.com/link/nDhmO3tUIJhJFsqH"></iframe>
+<button onclick="openSite()">Open Site</button>
+
+<script>
+function openSite() {
+  const win = window.open("about:blank", "_blank");
+  if (win) {
+    win.location.href = "https://freetubespot.com/link/nDhmO3tUIJhJFsqH";
+  }
+}
+</script>
 
 </body>
 </html>
